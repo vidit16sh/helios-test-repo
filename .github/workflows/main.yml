@@ -1,15 +1,29 @@
-- name: Report Failure to Helios CI
-        if: failure()
+name: Test Workflow for Helios
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: This step will fail
+        run: |
+          echo "This command will fail, triggering the next step."
+          exit 1
+
+      # Your reporting step is now correctly placed inside the job
+      - name: Report Failure to Helios CI
+        if: failure() # This now works because it's attached to a step
         run: |
           # Get the job logs...
           JOB_ID=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | jq '.jobs[0].id')
           JOB_LOGS=$(curl --fail-with-body -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs")
           ESCAPED_LOGS=$(echo "$JOB_LOGS" | jq -Rsa .)
 
-          # --- ADD THIS LINE TO DEBUG ---
+          # Debugging line to print the URL
           echo "Webhook URL being used: ${{ secrets.HELIOS_WEBHOOK_URL }}"
 
-          # The original curl command
+          # The curl command to send the webhook
           curl --request POST \
           --url "${{ secrets.HELIOS_WEBHOOK_URL }}" \
           --header "Content-Type: application/json" \
