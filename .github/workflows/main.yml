@@ -1,4 +1,4 @@
-name: Final Test Workflow for Helios
+name: Final Webhook Test
 on: [push]
 
 jobs:
@@ -6,34 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: This step will fail
-        run: |
-          echo "This command is designed to fail."
-          exit 1
+        run: exit 1
 
       - name: Report Failure to Helios CI
         if: failure()
-        run: |
-          # Get the job logs from the GitHub API
-          JOB_ID=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | jq '.jobs[0].id')
-          JOB_LOGS=$(curl --fail-with-body -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs")
-
-          # Escape the logs to be a valid JSON string
-          ESCAPED_LOGS=$(echo "$JOB_LOGS" | jq -Rsa .)
-
-          # --- ROBUST JSON PAYLOAD ---
-          # Use a "here document" to build the JSON payload safely.
-          # This avoids all shell quoting issues.
-          JSON_PAYLOAD=$(cat <<EOF
-          {
-            "repository": "${{ github.repository }}",
-            "commit_sha": "${{ github.sha }}",
-            "logs": $ESCAPED_LOGS
-          }
-          EOF
-          )
-
-          # Send the webhook with the correctly formatted JSON
-          curl --request POST \
-            --url "${{ secrets.HELIOS_WEBHOOK_URL }}" \
-            --header "Content-Type: application/json" \
-            --data "$JSON_PAYLOAD"
+        uses: distributhor/workflow-webhook@v3
+        with:
+          webhook_url: ${{ secrets.HELIOS_WEBHOOK_URL }}
+          webhook_secret: "" # Not needed for this test
+          data: '{ "repository": "${{ github.repository }}", "commit_sha": "${{ github.sha }}", "logs": "GitHub Action failed. Logs are not captured in this simplified test." }'
