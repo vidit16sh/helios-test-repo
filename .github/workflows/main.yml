@@ -1,31 +1,15 @@
-name: Test Workflow for Helios
-
-on: [push]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: This step will fail
-        run: |
-          echo "This Python command will fail because the module does not exist."
-          python -c "import non_existent_module"
-
-      # This step ONLY runs if a previous step has failed
-      - name: Report Failure to Helios CI
+- name: Report Failure to Helios CI
         if: failure()
         run: |
-          # Get the job logs from the GitHub API
+          # Get the job logs...
           JOB_ID=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | jq '.jobs[0].id')
           JOB_LOGS=$(curl --fail-with-body -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs")
-
-          # Escape special characters to create valid JSON
           ESCAPED_LOGS=$(echo "$JOB_LOGS" | jq -Rsa .)
 
-          # Send the webhook payload to your Helios CI application
+          # --- ADD THIS LINE TO DEBUG ---
+          echo "Webhook URL being used: ${{ secrets.HELIOS_WEBHOOK_URL }}"
+
+          # The original curl command
           curl --request POST \
           --url "${{ secrets.HELIOS_WEBHOOK_URL }}" \
           --header "Content-Type: application/json" \
