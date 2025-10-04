@@ -18,10 +18,10 @@ jobs:
           JOB_LOGS=$(curl --fail-with-body -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs")
           ESCAPED_LOGS=$(echo "$JOB_LOGS" | jq -Rsa .)
 
-          # --- THIS LINE WILL PRINT THE EXACT URL BEING USED ---
-          echo "Webhook URL being used: ${{ secrets.HELIOS_WEBHOOK_URL }}"
+          # --- THIS IS THE NEW DEBUGGING LINE ---
+          echo "Webhook URL being used by this Action: ${{ secrets.HELIOS_WEBHOOK_URL }}"
 
-          # The curl command to send the webhook
+          # The original curl command to send the webhook
           curl --request POST \
           --url "${{ secrets.HELIOS_WEBHOOK_URL }}" \
           --header "Content-Type: application/json" \
