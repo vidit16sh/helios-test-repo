@@ -1,4 +1,4 @@
-name: Simplified Webhook Test
+name: Test Workflow for Helios
 on: [push]
 
 jobs:
@@ -6,12 +6,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: This step will fail
-        run: exit 1
+        run: |
+          echo "This command will fail, triggering the next step."
+          exit 1
 
-      - name: Send Simple Webhook to Helios
+      - name: Report Failure to Helios CI
         if: failure()
-        uses: distributhor/workflow-webhook@v3
-        with:
-          webhook_url: ${{ secrets.HELIOS_WEBHOOK_URL }}
-          webhook_secret: "" # Not needed for this test
-          data: '{ "repository": "test/simple-action", "commit_sha": "simple123", "logs": "This is a simplified test from a marketplace action." }'
+        run: |
+          # Get the job logs from the GitHub API
+          JOB_ID=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | jq '.jobs[0].id')
+          JOB_LOGS=$(curl --fail-with-body -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs")
+          ESCAPED_LOGS=$(echo "$JOB_LOGS" | jq -Rsa .)
+
+          # Send the webhook with the correct JSON structure
+          curl --request POST \
+          --url "${{ secrets.HELIOS_WEBHOOK_URL }}" \
+          --header "Content-Type: application/json" \
+          --data '{
+            "repository": "${{ github.repository }}",
+            "commit_sha": "${{ github.sha }}",
+            "logs": '"$ESCAPED_LOGS"'
+          }'
