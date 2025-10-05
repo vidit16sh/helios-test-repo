@@ -7,5 +7,6 @@ jobs:
     steps:
       - name: This step is designed to fail
         run: |
-          echo "This workflow will fail and trigger the Helios CI GitHub App."
-          exit 1
+          echo "This workflow will fail..."
+          echo "The Helios CI GitHub App will automatically detect this failure."
+          python -c "import non_existent_module"
