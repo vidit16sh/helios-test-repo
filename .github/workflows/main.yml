@@ -1,17 +1,11 @@
-name: Final Webhook Test
+name: Failing Workflow for Helios Test
 on: [push]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: This step will fail
-        run: exit 1
-
-      - name: Report Failure to Helios CI
-        if: failure()
-        uses: distributhor/workflow-webhook@v3
-        with:
-          webhook_url: ${{ secrets.HELIOS_WEBHOOK_URL }}
-          webhook_secret: "" # Not needed for this test
-          data: '{ "repository": "${{ github.repository }}", "commit_sha": "${{ github.sha }}", "logs": "GitHub Action failed. Logs are not captured in this simplified test." }'
+      - name: This step is designed to fail
+        run: |
+          echo "This workflow will fail and trigger the Helios CI GitHub App."
+          exit 1
