@@ -1,11 +1,25 @@
-name: Failing Workflow for Helios Test
+# .github/workflows/main.yml
+
+name: Test Flask Application
+
 on: [push]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: This step is designed to fail
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
         run: |
-          echo "This workflow will fail and trigger the Helios CI GitHub App."
-          python -c "import non_existent_module_to_trigger_failure"
+          pip install -r requirements.txt
+
+      - name: Run the application (this will fail)
+        run: |
+          python app.py
