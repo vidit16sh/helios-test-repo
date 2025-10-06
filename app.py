@@ -1,7 +1,10 @@
 # app.py
 
+# Triggering the build again for another test.
+# The 'requests' import below is what causes the failure.
+
 from flask import Flask
-import requests  # This line will cause the error
+import requests
 
 app = Flask(__name__)
 
@@ -9,6 +12,5 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, World!'
 
-# This part is just for local testing and won't run in the CI pipeline
 if __name__ == '__main__':
     app.run(debug=True)
