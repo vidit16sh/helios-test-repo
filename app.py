@@ -4,7 +4,7 @@
 # The 'requests' import below is what causes the failure.
 
 from flask import Flask
-import requests
+import pandas as pd
 
 app = Flask(__name__)
 
