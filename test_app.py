@@ -1,24 +1,27 @@
 # helios-test-repo/test_app.py
 
+from app import hello_world, process_order
 import pytest
 from unittest.mock import patch
-from app import get_feature_status
 
-def test_feature_status_when_off():
-    """
-    Tests the default behavior when the feature flag is OFF.
-    This test should pass.
-    """
-    assert get_feature_status() == "Feature is OFF"
+def test_hello_world():
+    assert hello_world() == "Hello, World!"
 
-# THIS IS THE CORRECTED, FAILING TEST
-@patch('config.FEATURE_FLAG_ENABLED', True)
-def test_feature_status_when_on_with_bad_mock():
+# New, complex test
+def test_process_order_race_condition():
     """
-    This test attempts to mock the feature flag where it is DEFINED,
-    not where it is USED. This is a common mistake and will cause the
-    test to fail, which is what we want.
+    This test simulates a race condition where the database save
+    is slower than the subsequent read.
     """
-    # The developer expects the flag to be ON here, but the mock
-    # didn't work, so the function will still return "Feature is OFF".
-    assert get_feature_status() == "Feature is ON"
+    # We patch 'get_from_db' to run BEFORE 'save_to_db' completes
+    # by swapping the implementation for the test's purpose.
+    with patch('app.save_to_db') as mock_save:
+        # This is the key: we make the save function do nothing,
+        # so the get function will fail.
+        mock_save.side_effect = lambda order: None
+
+        items = ["laptop", "mouse"]
+        
+        # This will raise a ValueError because the order was never saved.
+        with pytest.raises(ValueError, match="Order 1 could not be confirmed"):
+            process_order(items)
