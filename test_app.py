@@ -1,23 +1,22 @@
-# test_app.py
+# helios-test-repo/test_app.py
 
-from app import hello_world
 import pytest
+from unittest.mock import patch
+from app import get_feature_status
 
-def test_hello_world():
+def test_feature_status_when_off():
     """
-    This test will fail because the expected message is incorrect.
-    Helios will analyze the pytest output to identify the root cause.
+    Tests the default behavior when the feature flag is OFF.
+    This test should pass without any mocking.
     """
-    expected_message = "Hello, Universe!"  # This is the incorrect expectation
-    actual_message = hello_world()
-    assert actual_message == expected_message
+    assert get_feature_status() == "Feature is OFF"
 
-def test_hello_world_is_not_goodbye():
-    """A new failing test to check for a different string."""
-    actual_message = hello_world()
-    assert actual_message == "Goodbye, World!"
-
-def test_hello_world_type():
-    """A new failing test to check the return type."""
-    actual_message = hello_world()
-    assert isinstance(actual_message, int)
+@patch('app.FEATURE_FLAG_ENABLED', True)
+def test_feature_status_when_on():
+    """
+    This test attempts to mock the feature flag to be ON.
+    However, it uses the wrong path for the patch, so the mock will not work.
+    This is the complex error that Helios should be able to diagnose.
+    """
+    # The developer expects the flag to be ON here, but it's still OFF.
+    assert get_feature_status() == "Feature is ON"

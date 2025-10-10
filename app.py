@@ -1,24 +1,19 @@
+# helios-test-repo/app.py
+
 from flask import Flask
+from config import FEATURE_FLAG_ENABLED
 
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world()
-    return 'Hello, World!'
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-    # Introduce a NameError
-    # return undefined_variable
-
-    # Introduce a TypeError
-    # return 5 + "hello"
-
-    # Introduce a ZeroDivisionError
-    return 1 / 0
-
-    return 'Hello, World!'
+def get_feature_status():
+    """
+    Returns a different message based on the feature flag in config.py.
+    """
+    if FEATURE_FLAG_ENABLED:
+        return "Feature is ON"
+    else:
+        return "Feature is OFF"
 
 if __name__ == '__main__':
     app.run(debug=True)
